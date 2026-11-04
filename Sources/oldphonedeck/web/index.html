@@ -183,7 +183,7 @@
     <div id="hint">Hold any key to choose apps</div>
     <div id="music" class="card">
       <div id="mNote">♪</div><img id="mArt" class="none" alt="">
-      <div id="mInfo"><div id="mTitle">Nothing playing</div><div id="mArtist">Spotify or Apple Music</div></div>
+      <div id="mInfo"><div id="mTitle">Nothing playing</div><div id="mArtist">Play something on the computer</div></div>
       <div id="mProg"><i id="mProgFill"></i></div>
       <div id="mBtns">
         <div class="mb" id="mPrev"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3.5 3v10M12.5 3.6v8.8L5.8 8z" fill="#f5f5f7" stroke="#f5f5f7" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
@@ -220,7 +220,7 @@
   <div id="status">
     <div id="clock"><span id="time">–</span><span id="ampm"></span><span id="date"></span></div>
     <div id="seg"><div data-view="deck" class="on">Deck</div><div data-view="phone">Phone</div></div>
-    <div id="right"><span id="link"></span><span id="macName">Mac</span><span id="phoneBatt" style="display:none"><span class="batt"><i id="phoneBattFill"></i></span></span></div>
+    <div id="right"><span id="link"></span><span id="macName">Computer</span><span id="phoneBatt" style="display:none"><span class="batt"><i id="phoneBattFill"></i></span></span></div>
   </div>
 
   <!-- Ask Claude -->
@@ -248,7 +248,7 @@
 
   <div id="login" class="scrim">
     <div class="sheet">
-      <h2>Enter the access code from the Mac</h2>
+      <h2>Enter the access code from the computer</h2>
       <input id="code" autocapitalize="none" autocorrect="off">
       <div class="btns"><div class="btn primary" id="go">Connect</div></div>
     </div>
@@ -433,7 +433,7 @@
       })(apps[i]);
     }
     box.appendChild(key('claude', 'Take note', CLAUDE_SVG, openClaude, function () {
-      xhr('POST', url('/claude'), 'text=', function () { toast('Claude is open on the Mac'); });
+      xhr('POST', url('/claude'), 'text=', function () { toast('Claude is open on the computer'); });
     }));
   }
 
@@ -519,7 +519,7 @@
     if (!text) { if (!canListen) ask.focus(); return toast('Say or type something first'); }
     // Always sent: the note opens and starts a fresh conversation in Claude on the Mac.
     xhr('POST', url('/claude'), 'text=' + encodeURIComponent('Note: ' + text) + '&send=1', function (s) {
-      if (s !== 200) return toast('Could not reach the Mac');
+      if (s !== 200) return toast('Could not reach the computer');
       ask.value = ''; ask.blur(); sheet('claude', false);
       toast('Note sent: new Claude chat started');
     });
@@ -584,7 +584,7 @@
   function renderBatteries(list) {
     lastBatteries = list || [];
     var rows = lastBatteries.slice();
-    if (phone) rows.unshift({ name: 'iPhone', kind: 'phone', level: Math.round(phone.level * 100), charging: phone.charging });
+    if (phone) rows.unshift({ name: 'This device', kind: 'phone', level: Math.round(phone.level * 100), charging: phone.charging });
     var box = $('batList');
     if (!rows.length) { box.innerHTML = '<div class="empty-note">No devices reporting</div>'; $('bat').style.height = '64px'; return; }
     box.innerHTML = '';
@@ -638,7 +638,7 @@
   function renderMusic(m) {
     m = m || {};
     $('mTitle').textContent = m.title || 'Nothing playing';
-    $('mArtist').textContent = m.title ? (m.artist || '') + (m.app ? ' · ' + m.app : '') : 'Spotify or Apple Music';
+    $('mArtist').textContent = m.title ? (m.artist || '') + (m.app ? ' · ' + m.app : '') : 'Play something on the computer';
     track = { playing: !!m.playing, position: m.position || 0, duration: m.duration || 0, at: Date.now() };
     setPlayIcon(track.playing);
     var key = m.id && m.hasArt ? m.id : '';
@@ -661,7 +661,7 @@
   tap($('mPlay'), function () { setPlayIcon(!track.playing); track.playing = !track.playing; media('playpause'); });
   tap($('mNext'), function () { media('next'); });
   tap($('mPrev'), function () { media('previous'); });
-  tap($('mInfo'), function () { media('open'); toast('Opening the player on the Mac'); });
+  tap($('mInfo'), function () { media('open'); toast('Opening the player on the computer'); });
   setPlayIcon(false);
 
   // ---------- Phone tab: camera + mic to the Mac over a secure WebSocket ----------
@@ -700,7 +700,7 @@
   function phoneStatus() {
     $('pCam').className = 'pbtn' + (camStream ? ' on' : '');
     $('pMic').className = 'pbtn' + (micStream ? ' on' : '');
-    $('pCam').lastChild.textContent = camStream ? (wsReady() ? 'Streaming to Mac' : 'Connecting…') : 'Off';
+    $('pCam').lastChild.textContent = camStream ? (wsReady() ? 'Streaming' : 'Connecting…') : 'Off';
     $('pMic').lastChild.textContent = micStream ? (wsReady() ? 'Streaming → BlackHole' : 'Connecting…') : 'Off';
     $('pvOff').style.display = camStream ? 'none' : '';
     $('pNote').textContent = 'OBS Media Source: http://localhost:' + httpPort + '/camera.mjpg?k=' + token +
@@ -787,7 +787,7 @@
     });
   }
   tap($('go'), function () {
-    token = $('code').value.replace(/\s/g, '').toLowerCase();
+    token = $('code').value.replace(/[^a-z0-9]/gi, '').toLowerCase();
     store('token', token); location.hash = 'k=' + token; connect();
   });
   fit(); tick(); connect();

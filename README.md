@@ -19,7 +19,42 @@ No jailbreak, no App Store, nothing to install on the phone: it runs in Safari, 
 - **Fits any iPhone:** a compact 480×320 layout on old phones; full-width landscape and a portrait layout on modern ones.
 - **Modern iPhones also get:** voice input for Take note, and a **Phone** tab that streams the camera (into OBS) and the mic (into BlackHole) to your Mac.
 
-## Requirements
+## Linux (new: Go server)
+
+A cross-platform Go server lives in [`cmd/oldphonedeck`](cmd/oldphonedeck). It serves the same page and API as the
+Swift one, so any phone or tablet browser works with it: old iPhones, and Android phones/tablets too.
+
+```bash
+go build -o build/oldphonedeck ./cmd/oldphonedeck
+./build/oldphonedeck            # --port N to change the port (default 8045)
+```
+
+On the phone, open **`http://oldphonedeck.local`** and type the access code printed in the terminal (asked once).
+Chrome on Android: **⋮ → Add to Home screen**. The server announces that name itself over mDNS (no Avahi needed);
+`--name desk` makes it `desk.local`. Android 11 and older can't resolve `.local` names: use the printed IP link there.
+
+One-time setup on Linux so the address needs no port and the firewall lets phones in (Fedora/Arch with firewalld):
+
+```bash
+echo 'net.ipv4.ip_unprivileged_port_start=80' | sudo tee /etc/sysctl.d/60-oldphonedeck.conf && sudo sysctl --system
+sudo firewall-cmd --permanent --add-service=mdns --add-service=http
+sudo firewall-cmd --permanent --add-port=8045/tcp
+sudo firewall-cmd --reload
+```
+
+| Feature | Linux backend | Status |
+|---|---|---|
+| App keys | `.desktop` entries (incl. Flatpak), icons from the icon theme (`rsvg-convert` for SVG), opened with `gio launch` | ✅ |
+| Take note | Opens `claude.ai/new?q=…` in the default browser (or the `claude://` app if one is registered) | ✅ (no auto-send) |
+| Now playing | MPRIS over D-Bus: Spotify, Firefox/Chrome tabs, Rhythmbox, VLC… | ✅ |
+| Internet | `/proc/net/dev` + speed test against `speed.cloudflare.com` | ✅ |
+| Batteries | UPower: laptop, Logitech/Bluetooth mice and keyboards, Bluetooth headphones | ✅ |
+| HTTPS, camera, mic | | not yet |
+
+Windows and macOS builds compile (`GOOS=windows go build ./cmd/oldphonedeck`) but only serve the page so far;
+their backends go in `*_windows.go` / `*_darwin.go` next to the Linux ones.
+
+## Requirements (original macOS / Swift version)
 
 - A Mac with macOS 14 or later and the Xcode Command Line Tools (`xcode-select --install`)
 - An iPhone or iPad with Safari: anything from iOS 8/9 (iPhone 4S, 5, iPad 2…) to the latest
